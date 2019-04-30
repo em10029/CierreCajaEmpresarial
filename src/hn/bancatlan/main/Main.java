@@ -26,13 +26,74 @@ public class Main {
 
     /**
      * Inicio de aplicación.
+     *
      * @param args
      */
     public static void main(String[] args) {
+                
+        Util.print("+++++++ CIERRE " + Util.getFechaHoraActual("yyyyMMdd - HH:mm:ss") + " +++++++");
+        
         //1- Configuracion
         Util.configurar();
-        //2- Procesar
-        procesar();
+        
+        //2- Validacion        
+        while(validar() == false){
+            //Espera
+            Runtime garbage = Runtime.getRuntime();
+            garbage.gc();
+            try {                
+                Thread.sleep(Util.TIEMPO * 60000); //Pausa en milisegundos
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        //3- Procesar
+        procesar();        
+    }
+
+    /**
+     * Valida si el cierre finalizo
+     * @return finalizoCierre
+     */
+    public static boolean validar() {
+        
+        boolean finalizoCierre = false;
+        
+        String fecha = Util.getFechaHoraActual("yyyyMMdd");
+        String hora = Util.getFechaHoraActual("HH:mm:ss");
+
+        try {
+            
+            PreparedStatement ps = Util.CONEXION.prepareStatement(Util.QUERY_SELECT_CIERRE);
+            ps.setString(1, fecha); //CIEFEC
+            ResultSet rs = ps.executeQuery();
+            
+            if(rs.next()){
+                int porcentaje = rs.getInt("CIEPOC");
+                
+                if(porcentaje == 100){
+                    //El cierre ya se finalizo
+                    finalizoCierre = true;
+                }else{
+                    //El cierre no ha finalizado
+                    Util.print('[' + fecha + '-' + hora + "] -> El cierre no ha finalizado, porcentaje: " + porcentaje);
+                }
+                
+            }else{
+                //Cierre no generado    
+                Util.print('[' + fecha + '-' + hora + "] -> Aun no se ha generado el cierre");
+            }
+                        
+            rs.close();
+            ps.close();
+
+        } catch (SQLException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return finalizoCierre;
+        
     }
 
     /**
@@ -126,7 +187,7 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        Util.print("Cierre generado --> fecha: " + fecha + " hora: " + hora + " canal: " + canal + " correlativo: " + correlativo);
+        Util.print('[' + fecha + '-' + hora + "] -> Cierre generado --> fecha: " + fecha + " hora: " + hora + " canal: " + canal + " correlativo: " + correlativo);
     }
 
 }

@@ -58,11 +58,20 @@ public class Util {
      */
     public static final String QUERY_INSERT_CAECEAS = "INSERT INTO CAEDTA.CAECEAS(CEAFEC,CEAHOR,CEACAN,CEACOR,CEASER,CEASERE)VALUES(?,?,?,?,?,?)";
     
+    /**
+     * Query validacion de cierre CAECIE
+     */
+    public static final String QUERY_SELECT_CIERRE = "SELECT CIEPOC FROM CAEDTA.CAECIE WHERE CIEFEC = ?";
     
     /**
      * Conexion
      */
     public static Connection CONEXION;
+    
+    /**
+     * Tiempo de espera
+     */
+    public static long TIEMPO;
     
     /**
      * Carga el archivo <b>config.properties</b> y obtiene las variables de
@@ -89,7 +98,8 @@ public class Util {
             //------------OBTENIENDO LAS VARIABLES DE CONFIGURACION------------//            
             String url = propiedades.getProperty("conexion.url").trim();            
             String user = propiedades.getProperty("conexion.user").trim();
-            String password = propiedades.getProperty("conexion.password").trim();       
+            String password = propiedades.getProperty("conexion.password").trim();
+            TIEMPO = Long.parseLong(propiedades.getProperty("control.time").trim());
             
             try {
                 Class.forName("com.ibm.as400.access.AS400JDBCDriver");
