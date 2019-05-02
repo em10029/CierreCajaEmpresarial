@@ -23,15 +23,21 @@ import java.util.logging.Logger;
  * @version 1.0.0 12-abr-2019
  */
 public class Main {
-
+    
+    /**
+     * Fecha de petición
+     */
+    private static final String FECHA = Util.getFechaHoraActual("yyyyMMdd");
+    
     /**
      * Inicio de aplicación.
      *
      * @param args
      */
-    public static void main(String[] args) {
-                
-        Util.print("+++++++ CIERRE " + Util.getFechaHoraActual("yyyyMMdd - HH:mm:ss") + " +++++++");
+    public static void main(String[] args) {     
+        
+        Util.print("");
+        Util.printLog("+++++++ CIERRE " + FECHA + " +++++++");
         
         //1- Configuracion
         Util.configurar();
@@ -42,14 +48,15 @@ public class Main {
             Runtime garbage = Runtime.getRuntime();
             garbage.gc();
             try {                
-                Thread.sleep(Util.TIEMPO * 60000); //Pausa en milisegundos
+                Thread.sleep(Util.TIEMPO * 60000); //Pausa en milisegundos                
             } catch (InterruptedException ex) {
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         
         //3- Procesar
-        procesar();        
+        procesar();              
+        
     }
 
     /**
@@ -60,13 +67,10 @@ public class Main {
         
         boolean finalizoCierre = false;
         
-        String fecha = Util.getFechaHoraActual("yyyyMMdd");
-        String hora = Util.getFechaHoraActual("HH:mm:ss");
-
         try {
             
             PreparedStatement ps = Util.CONEXION.prepareStatement(Util.QUERY_SELECT_CIERRE);
-            ps.setString(1, fecha); //CIEFEC
+            ps.setString(1, FECHA); //CIEFEC
             ResultSet rs = ps.executeQuery();
             
             if(rs.next()){
@@ -77,12 +81,20 @@ public class Main {
                     finalizoCierre = true;
                 }else{
                     //El cierre no ha finalizado
-                    Util.print('[' + fecha + '-' + hora + "] -> El cierre no ha finalizado, porcentaje: " + porcentaje);
+                    Util.printLog("El cierre no ha finalizado, porcentaje: " + porcentaje);
                 }
                 
             }else{
                 //Cierre no generado    
-                Util.print('[' + fecha + '-' + hora + "] -> Aun no se ha generado el cierre");
+                Util.printLog("Aun no se ha generado el cierre");
+                
+                //Verificar cambio de dia    
+                String fecha = Util.getFechaHoraActual("yyyyMMdd");
+                if(!FECHA.equals(fecha)){
+                    //La aplicacion termina, debido a que se excedio el tiempo de espera 
+                    Util.printLog("Tiempo de espera al limite, no se genero el cierre para la fecha: " + FECHA);
+                    System.exit(0);//Termina la aplicacion
+                }
             }
                         
             rs.close();
@@ -139,8 +151,8 @@ public class Main {
                     ps3.setString(5, "H");//CEATIP
                     ps3.setString(6, "I");//CEASTA
                     ps3.setString(7, "PAGOS");//CEATIF
-                    ps3.setString(8, fecha);//CEAFEI
-                    ps3.setString(9, fecha);//CEAFEF
+                    ps3.setString(8, FECHA);//CEAFEI
+                    ps3.setString(9, FECHA);//CEAFEF
                     ps3.setString(10, empresa);//CEAEMP
                     ps3.setString(11, "S");//CEATCO
                     ps3.setString(12, "");//CEACOE
@@ -187,7 +199,7 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        Util.print('[' + fecha + '-' + hora + "] -> Cierre generado --> fecha: " + fecha + " hora: " + hora + " canal: " + canal + " correlativo: " + correlativo);
+        Util.printLog("Cierre generado --> fecha: " + fecha + " hora: " + hora + " canal: " + canal + " correlativo: " + correlativo);
     }
 
 }

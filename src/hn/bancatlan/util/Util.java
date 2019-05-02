@@ -168,6 +168,16 @@ public class Util {
     }
     
     /**
+     * Registra el proceso en el log de la aplicación y lo muestra en la
+     * consola.
+     *
+     * @param string
+     */
+    public static void printLog(String string) {                
+        print(Util.getFechaHoraActual("[yyyyMMdd-HH:mm:ss] -> ") + string);
+    }
+    
+    /**
      * Obtiene la fecha y la hora según formato requerido.
      *
      * @param formato: Formato de fecha que se desea. Ejemplo: DD/MM/YYYY ->
